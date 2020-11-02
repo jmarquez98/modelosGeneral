@@ -3,7 +3,7 @@ import numpy as np
 from datetime import datetime, timedelta
 
 ####Voy a recibir un pandas dataframe con columnas realtime_start	date	value
-####Y una fecha limite. Voy a devolver un diccionario key=real_date, value=[Value, dateOfValue]
+####Y una fecha limite. Voy a devolver un diccionario key=dateOfValue, value=[Value, real_date]
 ####Tal que me devuelva los datos hasta la fecha pasada como parametro, que es el dia que yo analizo
 ####EL formato de las fechas TIENE que ser %Y-%m-%d (datetime python)
 ####Las fechas que vengan en formato string y aca las transformamos
