@@ -3,8 +3,8 @@ import pandas as pd
 import os
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta,date
-import modeloMediasMoviles as mmm
-import modeloUmbrales as mu
+import mediaXvsmediaY as mmm
+import umbralVSNivel as mu
 import utils as u
 
 PATH="resultadosModelos/"
