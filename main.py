@@ -52,7 +52,7 @@ def optimizarModelo(name, serie, isItFred, dateRange, numResults, dataFreq, sign
 			inv, dataFreq, dateRange, serie, isItFred, numResults
 
 		"""
-		print("Optimizando para ",modeloActual,"\n")
+		print("Optimizando para ",model,"\n")
 		
 		#Lo que devuelve cada optimizacion son dic de longitud numResults
 		# De ahi decidimos el mejor
