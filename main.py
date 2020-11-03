@@ -20,7 +20,7 @@ def optimizarModelo(name, serie, isItFred, dateRange, numResults, dataFreq, sign
 		os.makedirs(PATH+name)
 	for m in modelInformation:	
 		
-		model = lower(m[0])
+		model = m[0].lower()
 		
 		if not os.path.exists(PATH+name+"/"+model):
 	    	
@@ -38,7 +38,7 @@ def optimizarModelo(name, serie, isItFred, dateRange, numResults, dataFreq, sign
 
 	for m in modelInformation:
 		
-		model = lower(m[0])
+		model = m[0].lower()
 		
 		""" Orden de los parametros segun modelo:
 				
