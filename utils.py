@@ -5,7 +5,7 @@ def drawdown(serie):
 
 	res = [0]
 
-	for i in range(1,len(serie))
+	for i in range(1,len(serie)):
 
 		res.append(serie[i]/max(serie[0:i+1])-1)
 
