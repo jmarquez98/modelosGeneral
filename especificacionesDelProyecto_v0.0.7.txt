@@ -1,0 +1,65 @@
+################INPUT################
+
+Titulo de la serie
+
+DF con realtime y date. Imitando el formato FRED.
+
+Bool fred o no.
+
+Arreglo de fechas
+
+cantidad Modelos de output
+
+FRECUENCIA de los datos
+
+tipo de señal, [cantidad, %]
+
+Modelo que queres:
+
+					----> UMBRAL: TECHO,PISO,STEP  
+
+
+					----> MEDIAS MOVILES:  FIN, SUPERPOSICION
+
+
+El formato va a ser el siguiente (se puede modificar): Inputa sera arreglo de arreglos, donde cada arreglo
+tendra en la primer componente el nombre y el resto como se indica arriba. Entonces se iterara por ese arrelgo
+llamando al modelo pedido.
+
+
+
+###############Output################
+
+Las optimizaciones de cada modelos devuelven vectores de cada estadistico de la longitud
+de resultados pedido como parametro para luego analizar el mejor
+
+Graficos, retorno anualizado (sp, portfolio), volatlidliad, sharpe ratio, infarmation ratio, drawdown, cantidad señales compra/venta, meses que le gana/pierda al sp, %meses comprado/vendido.
+
+
+
+
+
+
+
+
+
+
+###############Estructura################
+
+
+Estadisticos:
+			-----> retornos acumulado y sp, señales
+
+
+
+
+Modelo: Cada modelos tiene su script, señales
+
+
+
+
+Carpetas: Indicador ---> modelo-----> fecha---> estadsticos
+
+
+utils.py
+
