@@ -1,5 +1,5 @@
-from datetime import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
+import pandas as pd
 
 # Los inputs deberían ser series de pandas con las fechas reales como indice, se asume que estan acotadas [fecha_inicio:fecha_fin] (son del mismo periodo)
 def spDailyToMonthly(diario_sp, mensual_indicador):
@@ -11,7 +11,7 @@ def spDailyToMonthly(diario_sp, mensual_indicador):
 
         # La primera parte del if salva el caso en el que la primer fecha mensual sea menor a la primera fecha diaria del sp, por un par de dias (finde o algo por el estilo)
         if mes_sp < diario_sp.index[0]:
-            mensual_sp[mes] = diario_sp.index[0]
+            mensual_sp[mes] = diario_sp[diario_sp.index[0]]
         
         # La segunda parte del if busca el precio del sp para la el 1ro del mes, si justo el 1ro no fue una rueda, va para atras a buscar el ultimo precio
         else:
@@ -36,4 +36,3 @@ def signalsMonthlyToDaily(diario_sp, senales_mensuales):
         senales_diarias[date] = senales_mensuales[datetime(date.year, date.month, 1)]
     
     return senales_diarias
-
