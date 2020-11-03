@@ -4,7 +4,7 @@ import pandas as pd
 from datetime import datetime,date,timedelta
 
 def optimizar(ultimaMedia,superposicion,inv,dataFreq,dateRange, serie, isItFred, numResults):
-	#dic_res tiene key el valor del modelo (una media movil, un umbral ) y value un diccionario con key annualizedRet_SP, annualizedRet_port, signals
+	#dic_res tiene key el valor del modelo (una media movil, un umbral ) y value un diccionario con key cumRet_SP, cumRet_port, signals,date
 	dic_res = {}
 
 

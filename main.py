@@ -56,7 +56,7 @@ def optimizarModelo(name, serie, isItFred, dateRange, numResults, dataFreq, sign
 		
 		#Lo que devuelve cada optimizacion son dic de longitud numResults
 		# De ahi decidimos el mejor
-		#dic_res tiene key el valor del modelo (una media movil, un umbral ) y value un diccionario con key annualizedRet_SP, annualizedRet_port, signals
+		#dic_res tiene key el valor del modelo (una media movil, un umbral ) y value un diccionario con key cumRet_SP, cumRet_port, signals,date
 		if model == "mediasmoviles":
 		
 			ultimaMedia = m[1]
@@ -82,8 +82,10 @@ def optimizarModelo(name, serie, isItFred, dateRange, numResults, dataFreq, sign
 
 		print("Ya se optimizo para ",modeloActual,"\n")
 
-
+		print("Arrancando el analisis...\n")
+		
 		#Lo que devuelve son vectores de longitud numResults
+		
 		parametros,annualizedRet_SP, annualizedRet_port, vol, sharpeRatio, infoRatio, drawdown, numSignBuy, numSignSell, monthAboveSp, monthBelowSp, monthBought, monthSold = u.analizar(dic_res) 
 
 		df_res = pd.DataFrame()
@@ -93,7 +95,7 @@ def optimizarModelo(name, serie, isItFred, dateRange, numResults, dataFreq, sign
 		df_res["ret_port"]= annualizedRet_port
 		df_res["vol"]= vol
 		df_res["sharpeRatio"]= sharpeRatio
-		df_res["drawdown"]= drawdown
+		df_res["drawdown"]= min(drawdown)
 		df_res["numSignBuy"]= numSignBuy
 		df_res["numSignSell"]= numSignSell
 		df_res["monthAboveSp"]= monthAboveSp
@@ -103,3 +105,5 @@ def optimizarModelo(name, serie, isItFred, dateRange, numResults, dataFreq, sign
 
 
 		df_res.to_excel(PATH+name+"/"+model+"/"+today+"/resultados.xlsx")
+		
+		print("Analisis terminado, vamos con el siguiente \n")
