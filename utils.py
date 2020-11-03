@@ -23,4 +23,11 @@ def mediaMovil(serie,n):
 
 	return res 
 	
-	
+def analizar(dic):
+
+
+
+
+
+	return parametros,annualizedRet_SP, annualizedRet_port, vol, sharpeRatio, infoRatio, drawdown, numSignBuy, numSignSell, monthAboveSp, monthBelowSp, monthBought, monthSold parametros,annualizedRet_SP, annualizedRet_port, vol, sharpeRatio, infoRatio, drawdown, numSignBuy, numSignSell, monthAboveSp, monthBelowSp, monthBought, monthSold 
+
