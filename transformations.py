@@ -12,12 +12,14 @@ def toRealDate(df, date_end):
 	   Osea para los datos anteriores al primer realtime del primer datos (Ej datos de 1929 con realtime en 2010)
 	   Para eso haremos un estimativo de cuanto tardan en publicarse los datos y generaremos un realtimefake estimado para esos datos"""
 
-	fechaInicioReal = datetime.strptime(df["realtime_start"][0], '%Y-%m-%d')
+	#fechaInicioReal = datetime.strptime(df["realtime_start"][0], '%Y-%m-%d')
+
+	fechaInicioReal = df["realtime_start"][0]
 
 	tenemosDiferencia = False #Variable boolean para saber si ya calcule la diferencia (quiero hacerla para el primer caso que es cuando estoy en los datos que se actualizan normalmente, no los cargado al arranque)
 	diferenciaDias = None # Aca voy a tener la diferencia de dias entre el dato y la carga
 	################
-	date_end =  datetime.strptime(date_end, '%Y-%m-%d')#Cambio el tipo de dato de la fecha. De string a datetime
+	#date_end =  datetime.strptime(date_end, '%Y-%m-%d')#Cambio el tipo de dato de la fecha. De string a datetime
 
 	dic_realtime = {}# Diccionario de respuesta, con las fechas reales segun date_end
 
@@ -28,28 +30,33 @@ def toRealDate(df, date_end):
 	#Para date todos sus values posibles
 	for i in range(0,len(df)): 
 		
-		d =  datetime.strptime(df["date"][i], '%Y-%m-%d') 
+		#d =  datetime.strptime(df["date"][i], '%Y-%m-%d') 
 		
+		d =  df["date"][i]
+		
+
 		if d in  dic_date:
 
-			dic_date[d].append([datetime.strptime(df["realtime_start"][i], '%Y-%m-%d') ,df["value"][i]])
+			#dic_date[d].append([datetime.strptime(df["realtime_start"][i], '%Y-%m-%d') ,df["value"][i]])
+			dic_date[d].append([df["realtime_start"][i] ,df["value"][i]])
 		
 		elif d not  in  dic_date:	
 
 			dic_date[d] = []
 			
-			dic_date[d].append([datetime.strptime(df["realtime_start"][i], '%Y-%m-%d') ,df["value"][i]])
+			#dic_date[d].append([datetime.strptime(df["realtime_start"][i], '%Y-%m-%d') ,df["value"][i]])
+			dic_date[d].append([df["realtime_start"][i] ,df["value"][i]])
 		
 		else:
 		
 			raise Exception("Error toRealDate.py armando diccionario de fechas. El date no esta y tampoco esta.")
 
-		if  fechaInicioReal < datetime.strptime(df["date"][i], '%Y-%m-%d') and not tenemosDiferencia: # Cuando llego al caso de que son datos cargados en vivo y no los que se cargaron todos juntos al inicio calculo la diferencia
+		if  fechaInicioReal < df["date"][i] and not tenemosDiferencia: # Cuando llego al caso de que son datos cargados en vivo y no los que se cargaron todos juntos al inicio calculo la diferencia
 			
 			tenemosDiferencia = True
 		
-			diferenciaDias  = (datetime.strptime(df["realtime_start"][i], '%Y-%m-%d') - datetime.strptime(df["date"][i], '%Y-%m-%d')).days
-			print(diferenciaDias)
+			diferenciaDias  = (df["realtime_start"][i] -df["date"][i]).days
+			
 
 
 	for date in dic_date: # Para los datos cargados todos juntos les armo un realtime estimado fake de diferenciaDias mas entre su date
@@ -75,11 +82,13 @@ def toRealDate(df, date_end):
 			if len(disponibles) > 0: # Esto es porque pueden ser el caso de que el date sea valido pero el real no lo sea entonces no hay datos posibles
 				
 
-				dic_realtime[date] = [disponibles[-1][0],disponibles[-1][1]]
+				dic_realtime[date] = disponibles[-1][1]
+
+	return dic_realtime
 
 # Los inputs deberían ser series de pandas con las fechas reales como indice, se asume que estan acotadas [fecha_inicio:fecha_fin] (son del mismo periodo)
 def spDailyToMonthly(diario_sp, mensual_indicador):
-
+	###TODO ARRELGAR recibir input de fred
     # Al copiar el mensual del indicador, hacemos una copia del indice mensual, por eso itero luego por las fechas del index para extraer el mensual del sp
     mensual_sp = mensual_indicador.copy()
     for mes in mensual_sp.index:

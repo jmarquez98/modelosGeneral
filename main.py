@@ -6,6 +6,7 @@ from datetime import datetime, timedelta,date
 import mediaXvsmediaY as mmm
 import umbralVSNivel as mu
 import utils as u
+import transformations as tr
 
 PATH="resultadosModelos/"
 
@@ -34,7 +35,13 @@ def optimizarModelo(name, serie, isItFred, dateRange, numResults, dataFreq, sign
 
 	#Itero sobre el arreglo modelInformation llamando al modelo solicitado 
 	
+	
+
+
 	print("Optimizando modelos...")
+
+	
+
 
 	for m in modelInformation:
 		
@@ -56,7 +63,7 @@ def optimizarModelo(name, serie, isItFred, dateRange, numResults, dataFreq, sign
 		
 		#Lo que devuelve cada optimizacion son dic de longitud numResults
 		# De ahi decidimos el mejor
-		#dic_res tiene key el valor del modelo (una media movil, un umbral ) y value un diccionario con key cumRet_SP, cumRet_port, signals,date
+		#dic_res tiene key el valor del modelo (una media movil, un umbral ) y value un diccionario con key  signals,date
 		if model == "mediasmoviles":
 		
 			ultimaMedia = m[1]
