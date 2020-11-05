@@ -42,33 +42,39 @@ def optimizar(ultimaMedia,superposicion,inv,dataFreq,startDate, serie, isItFred,
 			for i in range(lenta*valor_freq+demora,len(sp)):
 				print("Me faltan ",len(sp)-i," ruedas")
 
-				dic_res[(lenta,rapida)][1].append(sp.index.to_list()[i])
 				
+				#print(sp.index.to_list()[i])
+				# print(serie)
 				realtime_start = tr.toRealDate(serie,sp.index.to_list()[i])
 				
-				date_list=list(realtime_start.keys())
-				date_list.sort()
+				if len(realtime_start) != 0: 
+					dic_res[(lenta,rapida)][1].append(sp.index.to_list()[i])
 
-				value = []
-	
-				for j in range(0,len(date_list)):
+					date_list=list(realtime_start.keys())
+					date_list.sort()
+
+					value = []
+		
+					for j in range(0,len(date_list)):
+						
+						value.append(realtime_start[date_list[j]])
+					# print(realtime_start)
+					# print(value)
+
+					mediaMovilLenta = u.mediaMovil(value,lenta)
 					
-					value.append(realtime_start[date_list[j]])
+					mediaMovilRapida = u.mediaMovil(value,rapida)	
 
-				mediaMovilLenta = u.mediaMovil(value,lenta)
-				
-				mediaMovilRapida = u.mediaMovil(value,rapida)	
-
-				if mediaMovilRapida[-1] > mediaMovilLenta[-1]:
-					if inv:
-						dic_res[(lenta,rapida)][0].append(0)
+					if mediaMovilRapida[-1] > mediaMovilLenta[-1]:
+						if inv:
+							dic_res[(lenta,rapida)][0].append(0)
+						else:	
+							dic_res[(lenta,rapida)][0].append(1)
 					else:	
-						dic_res[(lenta,rapida)][0].append(1)
-				else:	
-					if inv:
-						dic_res[(lenta,rapida)][0].append(1)
-					else:	
-						dic_res[(lenta,rapida)][0].append(0)	
+						if inv:
+							dic_res[(lenta,rapida)][0].append(1)
+						else:	
+							dic_res[(lenta,rapida)][0].append(0)	
 		
 	return dic_res
 	

@@ -101,6 +101,7 @@ def analizar(dic,dateRange,modelo, nombre, today, numResults):
 		sp = sp["Adj Close"]
 		
 		for p in periods:
+			print(p)
 
 			fechaLimite = p[1]
 			ret_diario_porfolio    = [0]

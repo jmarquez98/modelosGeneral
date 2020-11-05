@@ -120,4 +120,4 @@ def optimizarModelo(name, serie, isItFred, dateRange, numResults, dataFreq, sign
 
 
 serie = pd.read_csv("RRSFS.csv")
-optimizarModelo("RRSFS", serie, True, ["1992-01-01","2005-01-01", "2010-01-01"], 3, "mEnSuAl", "coni", [["mediasmoviles", 20, 10]], False)
+optimizarModelo("RRSFS", serie, True, ["2015-01-01"], 3, "mEnSuAl", "coni", [["mediasmoviles", 3, 0]], False)
