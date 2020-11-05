@@ -22,8 +22,162 @@ def mediaMovil(serie,n):
 	res = list(pd.DataFrame(serie).rolling(n).mean())
 
 	return res 
-	
-"""def analizar(dic):
 
-	return parametros,annualizedRet_SP, annualizedRet_port, vol, sharpeRatio, infoRatio, drawdown, numSignBuy, numSignSell, monthAboveSp, monthBelowSp, monthBought, monthSold parametros,annualizedRet_SP, annualizedRet_port, vol, sharpeRatio, infoRatio, drawdown, numSignBuy, numSignSell, monthAboveSp, monthBelowSp, monthBought, monthSold 
-"""
+def info_ratio(portfolio_diario,sp_diario,acum_por,acum_sp):
+	
+	dif = []
+	
+	for i in range(0,len(sp_diario)):
+		
+		dif.append(portfolio_diario[i]-sp_diario[i])
+
+	res = ((acum_por-acum_sp)/np.std(dif))
+
+	return res
+def plotear(nombre,modelo,parametros,dates_periodo,sp_periodo,ret_acum):
+
+			plt.figure(figsize=(15,8))
+
+			plt.title(nombre," ",modelo," ",parametros)
+
+        	plt.plot(dates_periodo,sp_periodo)
+        	for i in (2,len(signals)):
+	        	if signals[i-1] == 1 and signals[i-2] == 0  :
+	                plt.scatter(dates_periodo[i], sp_periodo[i], color='green', s=40, marker="v")
+	               
+	          
+	            if signals[i-1] == 0 and signals[i-2] == 1:
+	                plt.scatter(dates_periodo[i], sp_periodo[i], color='red', s=40, marker="v")    
+               
+          	
+        	plt.plot(dates_periodo,ret_acum) 
+        	plt.tight_layout()
+        	plt.savefig()
+        	plt.close("all")
+
+
+
+
+def anualizar_retorno(serie,dias):
+	
+	res = ((serie[-1]/serie[0])**(365/dias))-1
+
+	return res
+
+	
+def analizar(dic,dateRange,modelo, nombre, today):
+
+	periods = []
+
+	for i in range(0,len(dateRange)-1):
+
+		p0 = datetime.strptime(dateRange[i], '%Y-%m-%d')
+		p1 = datetime.strptime(dateRange[i+1], '%Y-%m-%d')
+
+		periods.append((p0,p1))
+		if i == len(dateRange)-2:
+			periods.append((p1,datetime.today()))
+
+	p0 = datetime.strptime(dateRange[0], '%Y-%m-%d')
+			
+
+	periods.append((p0,datetime.today()))		
+
+	#dic_res tiene key el valor del modelo (una media movil, un umbral ) y value un diccionario con key  signals,date
+	for key in dic:	
+		
+		signals	= dic[key][0]
+		dates   = dic[key][1]
+		i = 1
+		sp = yf.download("^GSPC",dates[0])
+		sp = sp["Adj Close"]
+		
+		for p in periods:
+			
+			fechaLimite = p[1]
+			ret_diario_porfolio    = [0]
+			ret_acumulado_porfolio = [sp[i-1]]
+			
+			ret_diario_sp          = [sp[i-1]]
+			buySignals  =  0
+			sellSignals =  0
+
+			dates_periodo = [dates[i-1]]
+
+			tot_seniales = 0
+			diasComprado = 0
+			porArribaSp  = 0
+			while dates[i]< fechaLimite:
+
+				dates_periodo.append(dates[i])
+
+				ret_diario_sp.append((sp[i]/sp[i-1]-1)*100)	
+				
+				tot_seniales+=1
+				
+				try:
+					if signals[i-2] == 1:
+
+						ret_diario_porfolio.append(ret_diario_sp[-1])
+						
+						ret_acumulado_porfolio.append((ret_diario_sp[-1]+1)*ret_acumulado_porfolio[-1])
+						diasComprado+=1
+
+					else:
+						
+						ret_diario_porfolio.append(0)
+						
+						ret_acumulado_porfolio.append(ret_acumulado_porfolio[-1])
+				
+				except:		
+					
+					ret_diario_porfolio.append(0)
+					
+					ret_acumulado_porfolio.append(ret_acumulado_porfolio[-1])
+				
+				if ret_acumulado_porfolio[-1] > sp[i]:
+					porArribaSp+=1		
+
+				if signals[i-1] == 0 and signals[i] == 1:
+					
+					buySignals+=1
+				
+				elif signals[i-1] == 1 and signals[i] == 0:
+					
+					sellSignals+=1	
+
+				i+=1
+			
+			sp_periodo=sp[p[0]:p[1]]
+
+			ddn_port = drawdown(ret_acumulado_porfolio)		
+			ddn_sp   = drawdown(sp_periodo)
+
+			volatility_port = volatility(ret_acumulado_porfolio)
+			volatility_sp = volatility(sp_periodo)
+
+			anu_ret_porfolio = anualizar_retorno(ret_acumulado_porfolio,(p[1]-p[0]).days)
+			anu_ret_sp = anualizar_retorno(sp_periodo,(p[1]-p[0]).days) 
+
+
+			sharpeRatio_por = anu_ret_porfolio/volatility_port
+			sharpeRatio_sp = anu_ret_sp/volatility_sp
+
+
+			infoRatio = infoRatio(anu_ret_porfolio,anu_ret_sp,portfolio_diario,sp_diario)
+
+
+			t_bought = diasComprado / tot_seniales			
+			t_above  = porArribaSp  / tot_seniales
+
+
+
+
+
+
+
+
+
+
+
+	return parametros,annualizedRet_SP, annualizedRet_port, vol, sharpeRatio, infoRatio, drawdown, numSignBuy, numSignSell, timeAboveSp, timeBought
