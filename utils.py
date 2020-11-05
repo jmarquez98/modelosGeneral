@@ -27,7 +27,7 @@ def mediaMovil(serie,n):
 
 	return res 
 
-def info_ratio(portfolio_diario,sp_diario,acum_por,acum_sp):
+def info_ratio(portfolio_diario,sp_diario,anu_ret_port,anu_ret_sp):
 	
 	dif = []
 	
@@ -35,7 +35,7 @@ def info_ratio(portfolio_diario,sp_diario,acum_por,acum_sp):
 		
 		dif.append(portfolio_diario[i]-sp_diario[i])
 
-	res = ((acum_por-acum_sp)/np.std(dif))
+	res = (anu_ret_port-anu_ret_sp)/(np.std(dif)*np.sqrt(252))
 
 	return res
 def plotear(nombre,modelo,parametros,dates_periodo,sp_periodo,ret_acum,signals):
@@ -96,6 +96,7 @@ def analizar(dic,dateRange,modelo, nombre, today, numResults):
 		
 		signals	= dic[key][0]
 		dates   = dic[key][1]
+		print(len(dates))
 		i = 1
 		sp = yf.download("^GSPC",dates[0])
 		sp = sp["Adj Close"]
@@ -116,7 +117,8 @@ def analizar(dic,dateRange,modelo, nombre, today, numResults):
 			tot_seniales = 0
 			diasComprado = 0
 			porArribaSp  = 0
-			while dates[i]< fechaLimite:
+
+			while i < len(dates) and dates[i]< fechaLimite:
 
 				dates_periodo.append(dates[i])
 
@@ -183,7 +185,7 @@ def analizar(dic,dateRange,modelo, nombre, today, numResults):
 			rdos["sharpeRatio_sp"] = sharpeRatio_sp
 
 
-			infoRatio = infoRatio(anu_ret_porfolio,anu_ret_sp,ret_diario_porfolio,ret_diario_sp)
+			infoRatio = info_ratio(ret_diario_porfolio, ret_diario_sp, anu_ret_porfolio, anu_ret_sp)
 			rdos["infoRatio"] = infoRatio
 
 			t_bought = diasComprado / tot_seniales			
