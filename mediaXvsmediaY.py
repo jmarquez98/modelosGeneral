@@ -40,6 +40,7 @@ def optimizar(ultimaMedia,superposicion,inv,dataFreq,startDate, serie, isItFred,
 			print("Arrancando analisis para medias movil rapida ",rapida, " y lenta ",lenta,"\n")
 											
 			for i in range(lenta*valor_freq+demora,len(sp)):
+				print("Me faltan ",len(sp)-i," ruedas")
 
 				dic_res[(lenta,rapida)][1].append(sp.index.to_list()[i])
 				
@@ -72,5 +73,5 @@ def optimizar(ultimaMedia,superposicion,inv,dataFreq,startDate, serie, isItFred,
 	return dic_res
 	
 
-serie = pd.read_csv("RRSFS.csv")
-print(optimizar(5,0,False,"mensual","2019-01-01", serie, True, 0))
+# serie = pd.read_csv("RRSFS.csv")
+# print(optimizar(5,0,False,"mensual","2019-01-01", serie, True, 0))

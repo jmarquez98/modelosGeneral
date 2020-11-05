@@ -71,7 +71,7 @@ def optimizarModelo(name, serie, isItFred, dateRange, numResults, dataFreq, sign
 	
 
 
-			dic_res = mmm.optimizar(ultimaMedia,superposicion,inv,dataFreq,dateRange, serie, isItFred, numResults)
+			dic_res = mmm.optimizar(ultimaMedia,superposicion,inv,dataFreq,dateRange[0], serie, isItFred, numResults)
 
 		
 		elif model == "umbrales":	
@@ -85,32 +85,39 @@ def optimizarModelo(name, serie, isItFred, dateRange, numResults, dataFreq, sign
 		
 		else:
 				
-			raise Exception("El modelo ",modeloActual," no existe \n")	
+			raise Exception("El modelo ",model," no existe \n")	
 
-		print("Ya se optimizo para ",modeloActual,"\n")
+		print("Ya se optimizo para ",model,"\n")
 
 		print("Arrancando el analisis...\n")
+
+		top_results = u.analizar(dic_res, dateRange, model, name, today, numResults)
 		
 		#Lo que devuelve son vectores de longitud numResults
 		
-		parametros,annualizedRet_SP, annualizedRet_port, vol, sharpeRatio, infoRatio, drawdown, numSignBuy, numSignSell, monthAboveSp, monthBelowSp, monthBought, monthSold = u.analizar(dic_res) 
+		# parametros,annualizedRet_SP, annualizedRet_port, vol, sharpeRatio, infoRatio, drawdown, numSignBuy, numSignSell, monthAboveSp, monthBelowSp, monthBought, monthSold = u.analizar(dic_res) 
 
-		df_res = pd.DataFrame()
+		# df_res = pd.DataFrame()
 
-		df_res["parametro"]= parametros
-		df_res["ret_sp"]= annualizedRet_SP
-		df_res["ret_port"]= annualizedRet_port
-		df_res["vol"]= vol
-		df_res["sharpeRatio"]= sharpeRatio
-		df_res["drawdown"]= min(drawdown)
-		df_res["numSignBuy"]= numSignBuy
-		df_res["numSignSell"]= numSignSell
-		df_res["monthAboveSp"]= monthAboveSp
-		df_res["monthBelowSp"]= monthBelowSp
-		df_res["monthBought"]= monthBought
-		df_res["monthSold"]= monthSold
+		# df_res["parametro"]= parametros
+		# df_res["ret_sp"]= annualizedRet_SP
+		# df_res["ret_port"]= annualizedRet_port
+		# df_res["vol"]= vol
+		# df_res["sharpeRatio"]= sharpeRatio
+		# df_res["drawdown"]= min(drawdown)
+		# df_res["numSignBuy"]= numSignBuy
+		# df_res["numSignSell"]= numSignSell
+		# df_res["monthAboveSp"]= monthAboveSp
+		# df_res["monthBelowSp"]= monthBelowSp
+		# df_res["monthBought"]= monthBought
+		# df_res["monthSold"]= monthSold
 
 
-		df_res.to_excel(PATH+name+"/"+model+"/"+today+"/resultados.xlsx")
+		# df_res.to_excel(PATH+name+"/"+model+"/"+today+"/resultados.xlsx")
 		
 		print("Analisis terminado, vamos con el siguiente \n")
+		print(top_results)
+
+
+serie = pd.read_csv("RRSFS.csv")
+optimizarModelo("RRSFS", serie, True, ["1992-01-01","2005-01-01", "2010-01-01"], 3, "mEnSuAl", "coni", [["mediasmoviles", 20, 10]], False)

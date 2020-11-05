@@ -1,5 +1,9 @@
 import numpy as np
 import pandas as pd
+from datetime import datetime, date, timedelta
+import yfinance as yf
+import matplotlib.pyplot as plt
+import heapq as hp
 
 def drawdown(serie):
 
@@ -34,26 +38,26 @@ def info_ratio(portfolio_diario,sp_diario,acum_por,acum_sp):
 	res = ((acum_por-acum_sp)/np.std(dif))
 
 	return res
-def plotear(nombre,modelo,parametros,dates_periodo,sp_periodo,ret_acum):
+def plotear(nombre,modelo,parametros,dates_periodo,sp_periodo,ret_acum,signals):
 
-			plt.figure(figsize=(15,8))
+	plt.figure(figsize=(15,8))
+	titulo = nombre+" "+modelo+" "+parametros
+	plt.title(titulo)
 
-			plt.title(nombre," ",modelo," ",parametros)
-
-        	plt.plot(dates_periodo,sp_periodo)
-        	for i in (2,len(signals)):
-	        	if signals[i-1] == 1 and signals[i-2] == 0  :
-	                plt.scatter(dates_periodo[i], sp_periodo[i], color='green', s=40, marker="v")
-	               
-	          
-	            if signals[i-1] == 0 and signals[i-2] == 1:
-	                plt.scatter(dates_periodo[i], sp_periodo[i], color='red', s=40, marker="v")    
-               
-          	
-        	plt.plot(dates_periodo,ret_acum) 
-        	plt.tight_layout()
-        	plt.savefig()
-        	plt.close("all")
+	plt.plot(dates_periodo,sp_periodo)
+	for i in (2,len(signals)):
+		if signals[i-1] == 1 and signals[i-2] == 0  :
+			plt.scatter(dates_periodo[i], sp_periodo[i], color='green', s=40, marker="v")
+			
+		
+		if signals[i-1] == 0 and signals[i-2] == 1:
+			plt.scatter(dates_periodo[i], sp_periodo[i], color='red', s=40, marker="v")
+		
+	
+	plt.plot(dates_periodo,ret_acum) 
+	plt.tight_layout()
+	plt.savefig()
+	plt.close("all")
 
 
 
@@ -65,7 +69,7 @@ def anualizar_retorno(serie,dias):
 	return res
 
 	
-def analizar(dic,dateRange,modelo, nombre, today):
+def analizar(dic,dateRange,modelo, nombre, today, numResults):
 
 	periods = []
 
@@ -81,7 +85,11 @@ def analizar(dic,dateRange,modelo, nombre, today):
 	p0 = datetime.strptime(dateRange[0], '%Y-%m-%d')
 			
 
-	periods.append((p0,datetime.today()))		
+	periods.append((p0,datetime.today()))	
+
+	dict_heaps = { periodo: [] for periodo in periods }
+
+	######### dict_heaps[p1] = heap(ret_anualizado_de_param, (dict[param] = [estadisticos]))
 
 	#dic_res tiene key el valor del modelo (una media movil, un umbral ) y value un diccionario con key  signals,date
 	for key in dic:	
@@ -93,7 +101,7 @@ def analizar(dic,dateRange,modelo, nombre, today):
 		sp = sp["Adj Close"]
 		
 		for p in periods:
-			
+
 			fechaLimite = p[1]
 			ret_diario_porfolio    = [0]
 			ret_acumulado_porfolio = [sp[i-1]]
@@ -150,34 +158,40 @@ def analizar(dic,dateRange,modelo, nombre, today):
 			
 			sp_periodo=sp[p[0]:p[1]]
 
+			rdos = {}
+
 			ddn_port = drawdown(ret_acumulado_porfolio)		
 			ddn_sp   = drawdown(sp_periodo)
+			rdos["ddn_port"] = ddn_port
+			rdos["ddn_sp"] = ddn_sp
 
 			volatility_port = volatility(ret_acumulado_porfolio)
 			volatility_sp = volatility(sp_periodo)
+			rdos["volatility_port"] = volatility_port
+			rdos["volatility_sp"] = volatility_sp
 
 			anu_ret_porfolio = anualizar_retorno(ret_acumulado_porfolio,(p[1]-p[0]).days)
 			anu_ret_sp = anualizar_retorno(sp_periodo,(p[1]-p[0]).days) 
+			rdos["anu_ret_porfolio"] = anu_ret_porfolio
+			rdos["anu_ret_sp"] = anu_ret_sp
 
 
 			sharpeRatio_por = anu_ret_porfolio/volatility_port
 			sharpeRatio_sp = anu_ret_sp/volatility_sp
+			rdos["sharpeRatio_por"] = sharpeRatio_por
+			rdos["sharpeRatio_sp"] = sharpeRatio_sp
 
 
-			infoRatio = infoRatio(anu_ret_porfolio,anu_ret_sp,portfolio_diario,sp_diario)
-
+			infoRatio = infoRatio(anu_ret_porfolio,anu_ret_sp,ret_diario_porfolio,ret_diario_sp)
+			rdos["infoRatio"] = infoRatio
 
 			t_bought = diasComprado / tot_seniales			
 			t_above  = porArribaSp  / tot_seniales
+			rdos["t_bought"] = t_bought
+			rdos["t_above"] = t_above
 
-
-
-
-
-
-
-
-
-
-
-	return parametros,annualizedRet_SP, annualizedRet_port, vol, sharpeRatio, infoRatio, drawdown, numSignBuy, numSignSell, timeAboveSp, timeBought
+			hp.heappush(dict_heaps[p], (anu_ret_porfolio, [key, rdos]))
+			if len(dict_heaps[p]) > numResults:
+				hp.heappop(dict_heaps[p])
+			
+	return dict_heaps
