@@ -34,6 +34,10 @@ def optimizar(ultimaMedia,superposicion,inv,dataFreq,startDate, serie, isItFred,
 		valor_freq = 20
 		demora     = 15
 	#TODO revisar superposicion rapida *1.5.	
+	
+	
+	# for rapida in range(2,3):
+	# 	for lenta in range(8,9):
 	for rapida in range(1,ultimaMedia+1):
 		for lenta in range(rapida+1,ultimaMedia+1):
 			dic_res[(lenta,rapida)] = [[],[]]

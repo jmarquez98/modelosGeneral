@@ -23,7 +23,7 @@ def volatility(serie):
 
 def mediaMovil(serie,n):
 
-	res = list(pd.DataFrame(serie).rolling(n).mean())
+	res = pd.Series(serie).rolling(n).mean().tolist()
 
 	return res 
 
@@ -38,10 +38,11 @@ def info_ratio(portfolio_diario,sp_diario,anu_ret_port,anu_ret_sp):
 	res = (anu_ret_port-anu_ret_sp)/(np.std(dif)*np.sqrt(252))
 
 	return res
-def plotear(nombre,modelo,parametros,dates_periodo,sp_periodo,ret_acum,signals):
+
+def plotear(nombre,modelo,today,parametros,dates_periodo,sp_periodo,ret_acum,signals):
 
 	plt.figure(figsize=(15,8))
-	titulo = nombre+" "+modelo+" "+parametros
+	titulo = "{} {} {}".format(nombre, modelo, parametros)
 	plt.title(titulo)
 
 	plt.plot(dates_periodo,sp_periodo)
@@ -56,10 +57,20 @@ def plotear(nombre,modelo,parametros,dates_periodo,sp_periodo,ret_acum,signals):
 	
 	plt.plot(dates_periodo,ret_acum) 
 	plt.tight_layout()
-	plt.savefig()
+	plt.savefig("resultadosModelos/{}/{}/{}/ret-{}-{}-{}.png".format(nombre, modelo, today, dates_periodo[0], dates_periodo[-1], parametros))
 	plt.close("all")
 
-
+def plotear_ddn(nombre,modelo,today,parametros,dates_periodo,ddn_sp,ddn_port):
+	plt.figure(figsize=(15,8))
+	plt.title("Drawdown portfolio vs S&P500")
+	plt.ylabel("Drawdown")
+	plt.xlabel("Fechas")
+	plt.fill_between(dates_periodo,ddn_sp, color='blue', alpha=0.3,label="S&P500")
+	plt.fill_between(dates_periodo,ddn_port, color='orange', alpha=0.3,label="Drawdown")
+	plt.legend(loc="lower left")
+	plt.tight_layout()
+	plt.savefig("resultadosModelos/{}/{}/{}/ddn-{}-{}-{}.png".format(nombre, modelo, today, dates_periodo[0], dates_periodo[-1], parametros))
+	plt.close("all")
 
 
 def anualizar_retorno(serie,dias):
@@ -108,11 +119,12 @@ def analizar(dic,dateRange,modelo, nombre, today, numResults):
 			ret_diario_porfolio    = [0]
 			ret_acumulado_porfolio = [sp[i-1]]
 			
-			ret_diario_sp          = [sp[i-1]]
+			ret_diario_sp          = [0]
 			buySignals  =  0
 			sellSignals =  0
 
 			dates_periodo = [dates[i-1]]
+			signals_periodo = [signals[i-1]]
 
 			tot_seniales = 0
 			diasComprado = 0
@@ -121,8 +133,9 @@ def analizar(dic,dateRange,modelo, nombre, today, numResults):
 			while i < len(dates) and dates[i]< fechaLimite:
 
 				dates_periodo.append(dates[i])
+				signals_periodo.append(signals[i])
 
-				ret_diario_sp.append((sp[i]/sp[i-1]-1)*100)	
+				ret_diario_sp.append((sp[i]/sp[i-1]-1))	
 				
 				tot_seniales+=1
 				
@@ -162,6 +175,11 @@ def analizar(dic,dateRange,modelo, nombre, today, numResults):
 			sp_periodo=sp[p[0]:p[1]]
 
 			rdos = {}
+			rdos["sp_periodo"] = sp_periodo
+			# rdos["ret_diario_sp"] = ret_diario_sp
+			rdos["signals_periodo"] = signals_periodo
+
+			rdos["dates_periodo"] = dates_periodo
 
 			ddn_port = drawdown(ret_acumulado_porfolio)		
 			ddn_sp   = drawdown(sp_periodo)
@@ -178,6 +196,7 @@ def analizar(dic,dateRange,modelo, nombre, today, numResults):
 			rdos["anu_ret_porfolio"] = anu_ret_porfolio
 			rdos["anu_ret_sp"] = anu_ret_sp
 
+			rdos["ret_acumulado_port"] = ret_acumulado_porfolio
 
 			sharpeRatio_por = anu_ret_porfolio/volatility_port
 			sharpeRatio_sp = anu_ret_sp/volatility_sp
@@ -188,13 +207,15 @@ def analizar(dic,dateRange,modelo, nombre, today, numResults):
 			infoRatio = info_ratio(ret_diario_porfolio, ret_diario_sp, anu_ret_porfolio, anu_ret_sp)
 			rdos["infoRatio"] = infoRatio
 
-			t_bought = diasComprado / tot_seniales			
-			t_above  = porArribaSp  / tot_seniales
-			rdos["t_bought"] = t_bought
-			rdos["t_above"] = t_above
+			if tot_seniales > 0:
+				t_bought = diasComprado / tot_seniales			
+				t_above  = porArribaSp  / tot_seniales
+				rdos["t_bought"] = t_bought
+				rdos["t_above"] = t_above
 
 			hp.heappush(dict_heaps[p], (anu_ret_porfolio, [key, rdos]))
 			if len(dict_heaps[p]) > numResults:
 				hp.heappop(dict_heaps[p])
 			
 	return dict_heaps
+

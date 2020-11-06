@@ -115,9 +115,17 @@ def optimizarModelo(name, serie, isItFred, dateRange, numResults, dataFreq, sign
 
 		# df_res.to_excel(PATH+name+"/"+model+"/"+today+"/resultados.xlsx")
 		
-		print("Analisis terminado, vamos con el siguiente \n")
-		print(top_results)
+		print("Analisis terminado, vamos con los gráficos \n")
+		# return(top_results)
+		for heap in top_results.keys():
+			for rdo in top_results[heap]:
+				u.plotear(name, model, today, rdo[1][0], rdo[1][1]["dates_periodo"], rdo[1][1]["sp_periodo"], rdo[1][1]["ret_acumulado_port"], rdo[1][1]["signals_periodo"])
+				u.plotear_ddn(name, model, today, rdo[1][0], rdo[1][1]["dates_periodo"], rdo[1][1]["ddn_sp"], rdo[1][1]["ddn_port"])
 
+	"""
+	dict periodos -> heaps (top 'n' rdos)
+		heap: tupla(ret_anualizado, tupla(param, rdos))
+	"""
 
 # serie = pd.read_csv("RRSFS.csv")
 # print(optimizarModelo("RRSFS", serie, True, ["2020-01-01"], 3, "mEnSuAl", "coni", [["mediasmoviles", 2, 0]], False))
