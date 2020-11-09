@@ -46,14 +46,15 @@ def plotear(nombre,modelo,today,parametros,dates_periodo,sp_periodo,ret_acum,sig
 	plt.title(titulo)
 
 	plt.plot(dates_periodo,sp_periodo)
-	for i in (2,len(signals)):
+	
+	for i in range(2,len(signals)):
+		
 		if signals[i-1] == 1 and signals[i-2] == 0  :
 			plt.scatter(dates_periodo[i], sp_periodo[i], color='green', s=40, marker="v")
 			
 		
 		if signals[i-1] == 0 and signals[i-2] == 1:
 			plt.scatter(dates_periodo[i], sp_periodo[i], color='red', s=40, marker="v")
-		
 	
 	plt.plot(dates_periodo,ret_acum) 
 	plt.tight_layout()
@@ -81,7 +82,7 @@ def anualizar_retorno(serie,dias):
 
 	
 def analizar(dic,dateRange,modelo, nombre, today, numResults):
-
+	
 	periods = []
 
 	for i in range(0,len(dateRange)-1):
@@ -92,7 +93,8 @@ def analizar(dic,dateRange,modelo, nombre, today, numResults):
 		periods.append((p0,p1))
 		if i == len(dateRange)-2:
 			periods.append((p1,datetime.today()))
-
+	
+			
 	p0 = datetime.strptime(dateRange[0], '%Y-%m-%d')
 			
 
@@ -103,18 +105,24 @@ def analizar(dic,dateRange,modelo, nombre, today, numResults):
 	######### dict_heaps[p1] = heap(ret_anualizado_de_param, (dict[param] = [estadisticos]))
 
 	#dic_res tiene key el valor del modelo (una media movil, un umbral ) y value un diccionario con key  signals,date
+	
 	for key in dic:	
+		primera = True
 		
 		signals	= dic[key][0]
 		dates   = dic[key][1]
-		print(len(dates))
+	
 		i = 1
-		sp = yf.download("^GSPC",dates[0])
+		sp = yf.download("^GSPC",dates[0],datetime.today()-timedelta(days=1))
 		sp = sp["Adj Close"]
-		
+		periodosRestantes = len(periods)
 		for p in periods:
 			print(p)
 
+			if periodosRestantes == 1:
+				i = 1
+			
+				
 			fechaLimite = p[1]
 			ret_diario_porfolio    = [0]
 			ret_acumulado_porfolio = [sp[i-1]]
@@ -122,13 +130,17 @@ def analizar(dic,dateRange,modelo, nombre, today, numResults):
 			ret_diario_sp          = [0]
 			buySignals  =  0
 			sellSignals =  0
-
+			if not  primera  and periodosRestantes > 1:
+				i+=1
+			
 			dates_periodo = [dates[i-1]]
+
 			signals_periodo = [signals[i-1]]
 
 			tot_seniales = 0
 			diasComprado = 0
 			porArribaSp  = 0
+			periodosRestantes-=1
 
 			while i < len(dates) and dates[i]< fechaLimite:
 
@@ -170,10 +182,20 @@ def analizar(dic,dateRange,modelo, nombre, today, numResults):
 					
 					sellSignals+=1	
 
-				i+=1
-			
-			sp_periodo=sp[p[0]:p[1]]
+				
 
+				i+=1
+			sp_periodo=sp[p[0]:p[1]-timedelta(days=1)]
+			
+			primera = False
+			
+			print(dates_periodo[0])
+			print(sp_periodo.index[0])
+			print(dates_periodo[-1])
+			print(sp_periodo.index[-1])
+			print(len(dates_periodo))
+			print(len(sp_periodo))
+			
 			rdos = {}
 			rdos["sp_periodo"] = sp_periodo
 			# rdos["ret_diario_sp"] = ret_diario_sp
@@ -212,10 +234,12 @@ def analizar(dic,dateRange,modelo, nombre, today, numResults):
 				t_above  = porArribaSp  / tot_seniales
 				rdos["t_bought"] = t_bought
 				rdos["t_above"] = t_above
-
+			
 			hp.heappush(dict_heaps[p], (anu_ret_porfolio, [key, rdos]))
 			if len(dict_heaps[p]) > numResults:
 				hp.heappop(dict_heaps[p])
+		
+			
 			
 	return dict_heaps
 
