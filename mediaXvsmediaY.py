@@ -5,6 +5,7 @@ from datetime import datetime,date,timedelta
 import transformations as tr
 import yfinance as yf
 import utils as u
+import math as mt
 
 def optimizar(ultimaMedia,superposicion,inv,dataFreq,startDate, serie, isItFred, numResults):
 	#dic_res tiene key el valor del modelo (una media movil, un umbral ) y value un diccionario con key cumRet_SP, cumRet_port, signals,date
@@ -33,18 +34,17 @@ def optimizar(ultimaMedia,superposicion,inv,dataFreq,startDate, serie, isItFred,
 	if dataFreq.lower() == "mensual": 
 		valor_freq = 20
 		demora     = 15
-	#TODO revisar superposicion rapida *1.5.	
-	
 	
 	# for rapida in range(2,3):
 	# 	for lenta in range(8,9):
-	for rapida in range(1,ultimaMedia+1):
-		for lenta in range(rapida+1,ultimaMedia+1):
+	for lenta in range(2,ultimaMedia+1):
+		topeRapida = lenta - mt.floor(lenta*superposicion)
+		for rapida in range(1,topeRapida+1):
 			dic_res[(lenta,rapida)] = [[],[]]
 			print("Arrancando analisis para medias movil rapida ",rapida, " y lenta ",lenta,"\n")
 											
 			for i in range(lenta*valor_freq+demora,len(sp)):
-				print("Me faltan ",len(sp)-i," ruedas")
+				# print("Me faltan ",len(sp)-i," ruedas")
 
 				
 				#print(sp.index.to_list()[i])

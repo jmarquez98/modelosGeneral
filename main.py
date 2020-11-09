@@ -190,5 +190,5 @@ def optimizarModelo(name, serie, isItFred, dateRange, numResults, dataFreq, sign
 		heap: tupla(ret_anualizado, tupla(param, rdos))
 	"""
 
-serie = pd.read_csv("BAMLC4A0C710Y.csv")
-optimizarModelo("BAMLC4A0C710Y", serie, True, ["2020-01-01","2020-05-01","2020-08-01"], 3, "diario", "pache", [["mediasmoviles", 10, 0.5]], True)
+serie = pd.read_csv("UMCSENT.csv")
+optimizarModelo("UMCSENT", serie, True, ["2010-01-01","2020-01-01"], 5, "mensual", "pache", [["mediasmoviles", 12, 0.5]], True)
