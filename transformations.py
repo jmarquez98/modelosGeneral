@@ -130,3 +130,12 @@ def toFred(serie):
         "value" : serie.values
     }
     return pd.DataFrame(data=data)
+
+def cortarSeriePorFecha(serie,date_end):
+
+	res = []
+
+	for i in range(0,len(serie)):
+		if serie["date"][i] < date_end:
+			res.append(serie["value"][i]) 
+	return res		

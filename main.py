@@ -7,6 +7,7 @@ import mediaXvsmediaY as mmm
 import umbralVSNivel as mu
 import utils as u
 import transformations as tr
+import yfinance as yf
 
 PATH="resultadosModelos/"
 
@@ -190,5 +191,5 @@ def optimizarModelo(name, serie, isItFred, dateRange, numResults, dataFreq, sign
 		heap: tupla(ret_anualizado, tupla(param, rdos))
 	"""
 
-serie = pd.read_csv("UMCSENT.csv")
-optimizarModelo("UMCSENT", serie, True, ["2010-01-01","2020-01-01"], 5, "mensual", "pache", [["mediasmoviles", 12, 0.5]], True)
+serie = yf.download("^GSPC")["Adj Close"]
+optimizarModelo("SP500", serie, False, ["2010-01-01","2020-01-01"], 5, "mensual", "pache", [["mediasmoviles", 12, 0.5]], False)

@@ -142,7 +142,7 @@ def analizar(dic,dateRange,modelo, nombre, today, numResults):
 			porArribaSp  = 0
 			periodosRestantes-=1
 
-			while i < len(dates) and dates[i]< fechaLimite:
+			while i < len(dates) and dates[i]< fechaLimite and i< len(sp):
 
 				dates_periodo.append(dates[i])
 				signals_periodo.append(signals[i])
