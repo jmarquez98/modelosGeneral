@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 ####Tal que me devuelva los datos hasta la fecha pasada como parametro, que es el dia que yo analizo
 ####EL formato de las fechas TIENE que ser %Y-%m-%d (datetime python)
 ####Las fechas que vengan en formato string y aca las transformamos
-def toRealDate(df, date_end):
+def armarDic_toRealDate(df):
 	"""Hay un caso borde que es cuando el realtime es posterior al la fecha del periodo de referencia
 	   Osea para los datos anteriores al primer realtime del primer datos (Ej datos de 1929 con realtime en 2010)
 	   Para eso haremos un estimativo de cuanto tardan en publicarse los datos y generaremos un realtimefake estimado para esos datos"""
@@ -21,8 +21,7 @@ def toRealDate(df, date_end):
 	################
 	#date_end =  datetime.strptime(date_end, '%Y-%m-%d')#Cambio el tipo de dato de la fecha. De string a datetime
 
-	dic_realtime = {}# Diccionario de respuesta, con las fechas reales segun date_end
-
+	
 	############################
 
 	dic_date = {} # Voy a guardar para cada date todos los values que tiene y su real date asociada.
@@ -59,6 +58,7 @@ def toRealDate(df, date_end):
 			
 
 
+
 	for date in dic_date: # Para los datos cargados todos juntos les armo un realtime estimado fake de diferenciaDias mas entre su date
 		
 		if date  <	fechaInicioReal:
@@ -69,7 +69,11 @@ def toRealDate(df, date_end):
 			
 			dic_date[date].append([real_estimado ,value])		
 
-   
+	return dic_date		
+
+def toRealDate(dic_date, date_end):
+	dic_realtime = {}# Diccionario de respuesta, con las fechas reales segun date_end
+
 	for date in dic_date: # Me quedo con los datos mas recientes anteriores a mi fecha limite.
 		
 		if date  <	date_end:
@@ -131,11 +135,3 @@ def toFred(serie):
     }
     return pd.DataFrame(data=data)
 
-def cortarSeriePorFecha(serie,date_end):
-
-	res = []
-
-	for i in range(0,len(serie)):
-		if serie["date"][i] < date_end:
-			res.append(serie["value"][i]) 
-	return res		

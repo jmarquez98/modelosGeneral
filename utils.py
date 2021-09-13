@@ -16,8 +16,10 @@ def drawdown(serie):
 	return res
 	
 def volatility(serie):
+
+	res = np.std(((np.array(serie[1:])/np.array(serie[:-1]))-1), ddof=1)*np.sqrt(252)*100
 	
-	res = float(pd.DataFrame(serie).pct_change(1).std()*np.sqrt(252)*100)  
+	# res = float(pd.DataFrame(serie).pct_change(1).std()*np.sqrt(252)*100)  
 
 	return res
 
@@ -29,11 +31,13 @@ def mediaMovil(serie,n):
 
 def info_ratio(portfolio_diario,sp_diario,anu_ret_port,anu_ret_sp):
 	
-	dif = []
+	dif = np.array(portfolio_diario)-np.array(sp_diario)
+
+	# dif = []
 	
-	for i in range(0,len(sp_diario)):
+	# for i in range(0,len(sp_diario)):
 		
-		dif.append(portfolio_diario[i]-sp_diario[i])
+	# 	dif.append(portfolio_diario[i]-sp_diario[i])
 
 	res = (anu_ret_port-anu_ret_sp)/(np.std(dif)*np.sqrt(252))
 
@@ -45,6 +49,9 @@ def plotear(nombre,modelo,today,parametros,dates_periodo,sp_periodo,ret_acum,sig
 	titulo = "{} {} {}".format(nombre, modelo, parametros)
 	plt.title(titulo)
 
+	# print(parametros)
+	# print(dates_periodo)
+	# print(sp_periodo)
 	plt.plot(dates_periodo,sp_periodo)
 	
 	for i in range(2,len(signals)):
@@ -55,22 +62,24 @@ def plotear(nombre,modelo,today,parametros,dates_periodo,sp_periodo,ret_acum,sig
 		
 		if signals[i-1] == 0 and signals[i-2] == 1:
 			plt.scatter(dates_periodo[i], sp_periodo[i], color='red', s=40, marker="v")
-	
+	df = pd.DataFrame()
+
 	plt.plot(dates_periodo,ret_acum) 
+	plt.yscale('log')
 	plt.tight_layout()
-	plt.savefig("resultadosModelos/{}/{}/{}/ret-{}-{}-{}.png".format(nombre, modelo, today, dates_periodo[0], dates_periodo[-1], parametros))
+	plt.savefig("resultadosModelos/{}/{}/{}/ret-[{}~{}]-{}.png".format(nombre, modelo, today, dates_periodo[0].strftime("%Y-%m-%d"), dates_periodo[-1].strftime("%Y-%m-%d"), parametros))
 	plt.close("all")
 
-def plotear_ddn(nombre,modelo,today,parametros,dates_periodo,ddn_sp,ddn_port):
+def plotear_ddn(bmark,nombre,modelo,today,parametros,dates_periodo,ddn_sp,ddn_port):
 	plt.figure(figsize=(15,8))
-	plt.title("Drawdown portfolio vs S&P500")
+	plt.title("Drawdown portfolio vs "+bmark)
 	plt.ylabel("Drawdown")
 	plt.xlabel("Fechas")
-	plt.fill_between(dates_periodo,ddn_sp, color='blue', alpha=0.3,label="S&P500")
+	plt.fill_between(dates_periodo,ddn_sp, color='blue', alpha=0.3,label=bmark)
 	plt.fill_between(dates_periodo,ddn_port, color='orange', alpha=0.3,label="Drawdown")
 	plt.legend(loc="lower left")
 	plt.tight_layout()
-	plt.savefig("resultadosModelos/{}/{}/{}/ddn-{}-{}-{}.png".format(nombre, modelo, today, dates_periodo[0], dates_periodo[-1], parametros))
+	plt.savefig("resultadosModelos/{}/{}/{}/ddn-[{}~{}]-{}.png".format(nombre, modelo, today, dates_periodo[0].strftime("%Y-%m-%d"), dates_periodo[-1].strftime("%Y-%m-%d"), parametros))
 	plt.close("all")
 
 
@@ -81,10 +90,19 @@ def anualizar_retorno(serie,dias):
 	return res
 
 	
-def analizar(dic,dateRange,modelo, nombre, today, numResults):
-	
+def analizar(bmark, dic,dateRange,modelo, nombre, today, numResults,paramTooptimize):
+	print(dic)
 	periods = []
 
+	optimize = {}
+
+	optimize["retorno anualizado"]= "anu_ret_porfolio"
+	optimize["drawdown"]= "ddn_port"
+	optimize["information ratio"]= "infoRatio"
+	optimize["sharpe ratio"]= "sharpeRatio_por"
+	optimize["volatilidad anualizada"]= "volatility_port"
+
+	
 	for i in range(0,len(dateRange)-1):
 
 		p0 = datetime.strptime(dateRange[i], '%Y-%m-%d')
@@ -106,18 +124,30 @@ def analizar(dic,dateRange,modelo, nombre, today, numResults):
 
 	#dic_res tiene key el valor del modelo (una media movil, un umbral ) y value un diccionario con key  signals,date
 	
+	sp_total = yf.download(bmark,datetime.strptime(dateRange[0], '%Y-%m-%d'),datetime.today()-timedelta(days=1))
+	sp_total = sp_total["Adj Close"]
+
+	# sp_cada_periodo = {}
+	# for p in periods:
+	# 	sp_cada_periodo[p]= sp_total[p[0]:p[1]-timedelta(days=1)]
+
+	
 	for key in dic:	
+		print("Analizando para ", key)
 		primera = True
 		
 		signals	= dic[key][0]
 		dates   = dic[key][1]
+
+		sp = sp_total[dates[0]:]
+
+		# sp = yf.download("^GSPC",dates[0],datetime.today()-timedelta(days=1))
+		# sp = sp["Adj Close"]
 	
 		i = 1
-		sp = yf.download("^GSPC",dates[0],datetime.today()-timedelta(days=1))
-		sp = sp["Adj Close"]
 		periodosRestantes = len(periods)
 		for p in periods:
-			print(p)
+			#print(p)
 
 			if periodosRestantes == 1:
 				i = 1
@@ -141,7 +171,7 @@ def analizar(dic,dateRange,modelo, nombre, today, numResults):
 			diasComprado = 0
 			porArribaSp  = 0
 			periodosRestantes-=1
-
+			# print(len(signals))
 			while i < len(dates) and dates[i]< fechaLimite and i< len(sp):
 
 				dates_periodo.append(dates[i])
@@ -182,52 +212,64 @@ def analizar(dic,dateRange,modelo, nombre, today, numResults):
 					
 					sellSignals+=1	
 
-				
 
 				i+=1
+
 			sp_periodo=sp[p[0]:p[1]-timedelta(days=1)]
+			
+			# sp_periodo=sp_cada_periodo[p]
 			
 			primera = False
 			
-			print(dates_periodo[0])
-			print(sp_periodo.index[0])
-			print(dates_periodo[-1])
-			print(sp_periodo.index[-1])
-			print(len(dates_periodo))
-			print(len(sp_periodo))
+			# print(dates_periodo[0])
+			# print(sp_periodo.index[0])
+			# print(dates_periodo[-1])
+			# print(sp_periodo.index[-1])
+			# print(len(dates_periodo))
+			# print(len(sp_periodo))
 			
 			rdos = {}
-			rdos["sp_periodo"] = sp_periodo
+			rdos[bmark+"_periodo"] = sp_periodo
 			# rdos["ret_diario_sp"] = ret_diario_sp
 			rdos["signals_periodo"] = signals_periodo
 
 			rdos["dates_periodo"] = dates_periodo
 
-			ddn_port = drawdown(ret_acumulado_porfolio)		
-			ddn_sp   = drawdown(sp_periodo)
-			rdos["ddn_port"] = ddn_port
-			rdos["ddn_sp"] = ddn_sp
+			if paramTooptimize.lower() == "drawdown":
+			
+				ddn_port = drawdown(ret_acumulado_porfolio)		
+				ddn_sp   = drawdown(sp_periodo)
+				rdos["ddn_port"] = ddn_port
+				rdos["ddn_"+bmark] = ddn_sp
 
-			volatility_port = volatility(ret_acumulado_porfolio)
-			volatility_sp = volatility(sp_periodo)
-			rdos["volatility_port"] = volatility_port
-			rdos["volatility_sp"] = volatility_sp
-
+			if paramTooptimize.lower() in {"volatilidad anualizada"}:
+				
+				volatility_port = volatility(ret_acumulado_porfolio)
+				volatility_sp = volatility(sp_periodo)
+				rdos["volatility_port"] = volatility_port
+				rdos["volatility_"+bmark] = volatility_sp
+			print(ret_acumulado_porfolio)
 			anu_ret_porfolio = anualizar_retorno(ret_acumulado_porfolio,(p[1]-p[0]).days)
 			anu_ret_sp = anualizar_retorno(sp_periodo,(p[1]-p[0]).days) 
 			rdos["anu_ret_porfolio"] = anu_ret_porfolio
-			rdos["anu_ret_sp"] = anu_ret_sp
+			rdos["anu_ret_"+bmark] = anu_ret_sp
 
 			rdos["ret_acumulado_port"] = ret_acumulado_porfolio
 
-			sharpeRatio_por = anu_ret_porfolio/volatility_port
-			sharpeRatio_sp = anu_ret_sp/volatility_sp
-			rdos["sharpeRatio_por"] = sharpeRatio_por
-			rdos["sharpeRatio_sp"] = sharpeRatio_sp
-
-
-			infoRatio = info_ratio(ret_diario_porfolio, ret_diario_sp, anu_ret_porfolio, anu_ret_sp)
-			rdos["infoRatio"] = infoRatio
+			if paramTooptimize.lower() in {"sharpe ratio"}:
+				
+				sharpeRatio_por = anu_ret_porfolio/volatility_port
+				sharpeRatio_sp = anu_ret_sp/volatility_sp
+				rdos["sharpeRatio_por"] = sharpeRatio_por
+				rdos["sharpeRatio_"+bmark] = sharpeRatio_sp
+			
+			rdos["ret_diario_porfolio"] = ret_diario_porfolio
+			rdos["ret_diario_"+bmark]	=ret_diario_sp
+			
+			if paramTooptimize.lower() in {"info ratio"}:
+				
+				infoRatio = info_ratio(ret_diario_porfolio, ret_diario_sp, anu_ret_porfolio, anu_ret_sp)
+				rdos["infoRatio"] = infoRatio
 
 			if tot_seniales > 0:
 				t_bought = diasComprado / tot_seniales			
@@ -235,11 +277,44 @@ def analizar(dic,dateRange,modelo, nombre, today, numResults):
 				rdos["t_bought"] = t_bought
 				rdos["t_above"] = t_above
 			
-			hp.heappush(dict_heaps[p], (anu_ret_porfolio, [key, rdos]))
+			
+			if paramTooptimize.lower() == "drawdown":
+				toOpt = min(rdos["ddn_port"])
+			elif paramTooptimize.lower() in {"volatilidad anualizada"}:
+				toOpt = rdos["volatility_port"] * (-1)
+			else:
+				toOpt = rdos[optimize[paramTooptimize.lower()]]
+				
+
+			hp.heappush(dict_heaps[p], (toOpt, [key, rdos]))
 			if len(dict_heaps[p]) > numResults:
 				hp.heappop(dict_heaps[p])
-		
+	
+
+	for heap in dict_heaps.keys(): 			
+
+		for t in dict_heaps[heap]:
 			
-			
+			ddn_port = drawdown(t[1][1]["ret_acumulado_port"])		
+			ddn_sp   = drawdown(t[1][1][bmark+"_periodo"])
+			t[1][1]["ddn_port"] = ddn_port
+			t[1][1]["ddn_"+bmark] = ddn_sp
+
+			volatility_port = volatility(t[1][1]["ret_acumulado_port"])
+			volatility_sp = volatility(t[1][1][bmark+"_periodo"])
+			t[1][1]["volatility_port"] = volatility_port
+			t[1][1]["volatility_"+bmark] = volatility_sp
+
+
+			sharpeRatio_por = t[1][1]["anu_ret_porfolio"]/volatility_port
+			sharpeRatio_sp = t[1][1]["anu_ret_"+bmark]/volatility_sp
+			t[1][1]["sharpeRatio_por"] = sharpeRatio_por
+			t[1][1]["sharpeRatio_"+bmark] = sharpeRatio_sp
+
+			infoRatio = info_ratio(t[1][1]["ret_diario_porfolio"], t[1][1]["ret_diario_"+bmark], t[1][1]["anu_ret_porfolio"], t[1][1]["anu_ret_"+bmark])
+			t[1][1]["infoRatio"] = infoRatio
+
+
+
 	return dict_heaps
 
